@@ -8,17 +8,23 @@ Broker Names and Node IDs
 
 ###
 IP Address: 10.0.1.11
+
 FQDN: KAFKA0001.hq.corp
+
 Broker ID: 1
 
 ###
 IP Address: 10.0.1.12
+
 FQDN: KAFKA0002.hq.corp
+
 Broker ID: 2
 
 ###
 IP Address: 10.0.1.13
+
 FQDN: KAFKA0003.hq.corp
+
 Broker ID: 3
 
 
