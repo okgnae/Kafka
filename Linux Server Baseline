@@ -94,6 +94,13 @@ vi /etc/hosts
   10.0.0.103      KAFKA0003.hq.corp
 
 ###
+### Configure /etc/resolv.conf, make sure you update it for you nameserver
+###
+
+vi /etc/resolv.conf
+  nameserver 10.0.0.11
+
+###
 ### Create DNS A Record, From PowerShell as Domain Admin, You might have BIND, but this gives you the idea
 ###
  
@@ -115,9 +122,10 @@ firewall-cmd --remove-interface=enp0s3 --zone=public
 firewall-cmd --add-interface=enp0s3 --zone=drop
 firewall-cmd --remove-interface=enp0s8 --zone=public
 firewall-cmd --add-interface=enp0s8 --zone=drop
-firewall-cmd --permanent --add-rich-rule 'rule family="ipv4" source address="192.168.1.103" service name="ssh" accept'
+firewall-cmd --permanent --add-rich-rule 'rule family="ipv4" source address="192.168.1.180" service name="ssh" accept'
 firewall-cmd --reload
 firewall-cmd --list-all
+
 
 ###
 ### Configure YUM
