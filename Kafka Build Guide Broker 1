@@ -1,104 +1,101 @@
 ###
-### Move tar.gz to server
+### Set BROKER_ID to {1,2,3} depending on which Broker your working on
 ###
-scp "C:\Users\daniel.w.brown\Downloads\kafka_2.11-0.10.1.1.tgz" arcsight@XXXXXXXXXXXBK91:/tmp
- 
- 
+
+BROKER_ID=1
+
+###
+### Download Kafka tarball from apache
+###
+
+curl --url https://downloads.apache.org/kafka/2.5.0/kafka_2.12-2.5.0.tgz --output /tmp/kafka_2.12-2.5.0.tgz
+
 ###
 ### Move kafka tgz file from tmp to opt
 ###
-mv   /tmp/kafka_2.11-0.10.1.1.tgz   /opt
- 
- 
+
+mv /tmp/kafka_2.12-2.5.0.tgz /opt
+
 ###
 ### Untar file
 ###
-tar -zxf /opt/kafka_2.11-0.10.1.1.tgz  -C  /opt
- 
+
+tar -zxf /opt/kafka_2.12-2.5.0.tgz -C /opt
  
 ###
 ### Rename Kafka directory name
 ###
-mv  /opt/kafka_2.11-0.10.1.1  /opt/kafka
- 
- 
+
+mv  /opt/kafka_2.12-2.5.0  /opt/kafka
+
 ###
 ### Create Data directory
 ###
+
 mkdir /opt/kafka/data
- 
- 
+
 ###
 ### Make SSL Directory
 ###
+
 mkdir /opt/kafka/ssl
- 
- 
+
 ###
 ### Add user. Will cause warning
 ###
+
 useradd -u 996 -U kafka -m -d /opt/kafka -s /sbin/nologin
- 
- 
+
 ###
 ### Create Kafka service unit
 ###
+
 cat <<-EOF > /etc/systemd/system/kafka.service
 [Unit]
 Description=Kafka
 Documentation=http://kafka.apache.org
 After=zookeeper.service
 Requires=zookeeper.service
- 
+
 [Service]
 SuccessExitStatus=143
 WorkingDirectory=/opt/kafka
 User=kafka
 Type=simple
 ExecStart=/opt/kafka/bin/kafka-server-start.sh  /opt/kafka/config/server.properties
- 
+
 [Install]
 WantedBy=multi-user.target
 EOF
- 
- 
+
 ###
 ### Increase max java heap to 3GB in /opt/kafka/bin/kafka-server-start.sh
 ###
-sed -i 's/    export KAFKA_HEAP_OPTS=.*/    export KAFKA_HEAP_OPTS="-Xmx3G -Xms1G"/'  /opt/kafka/bin/kafka-server-start.sh
- 
- 
+
+sed -i 's/ export KAFKA_HEAP_OPTS=.*/ export KAFKA_HEAP_OPTS="-Xmx1G -Xms1G"/' /opt/kafka/bin/kafka-server-start.sh
+
 ###
 ### Server.properties file
 ###
-sed -i 's/^broker.id=.*/broker.id=1/'  /opt/kafka/config/server.properties
- 
+
+sed -i 's/^broker.id=.*/broker.id=${BROKER_ID}/'  /opt/kafka/config/server.properties
 sed -i 's/^#delete.topic.enable=.*/delete.topic.enable=true/'  /opt/kafka/config/server.properties
- 
-sed -i 's/^#listeners=.*/listeners=SSL:\/\/XXXXXXXXXXXBK91.aaa.bb.cccc.ddd:9093/'  /opt/kafka/config/server.properties
- 
-sed -i 's/^#advertised.listeners=.*/advertised.listeners=SSL:\/\/XXXXXXXXXXXBK91.aaa.bb.cccc.ddd:9093/'  /opt/kafka/config/server.properties
- 
+sed -i 's/^#listeners=.*/listeners=SSL:\/\/KAFKA000${BROKER_ID}.hq.corp:9093/'  /opt/kafka/config/server.properties
+sed -i 's/^#advertised.listeners=.*/advertised.listeners=SSL:\/\/KAFKA000${BROKER_ID}.hq.corp:9093/'  /opt/kafka/config/server.properties
 sed -i 's/^num.network.threads=.*/num.network.threads=6/'  /opt/kafka/config/server.properties
- 
 sed -i 's/^num.io.threads=.*/num.io.threads=10/'  /opt/kafka/config/server.properties
- 
 sed -i 's/^log.dirs=.*/log.dirs=\/opt\/kafka\/data/'  /opt/kafka/config/server.properties
- 
 sed -i 's/^num.partitions=.*/num.partitions=6/'  /opt/kafka/config/server.properties
- 
 sed -i 's/^log.retention.hours=.*/log.retention.hours=12/'  /opt/kafka/config/server.properties
- 
-sed -i 's/^zookeeper.connect=.*/zookeeper.connect=XXXXXXXXXXXBK91.aaa.bb.cccc.ddd:2181,XXXXXXXXXXXBK92.aaa.bb.cccc.ddd:2181,XXXXXXXXXXXBK93.aaa.bb.cccc.ddd:2181/'  /opt/kafka/config/server.properties
- 
- 
+sed -i 's/^zookeeper.connect=.*/zookeeper.connect=KAFKA0001.hq.corp:2181,KAFKA0002.hq.corp:2181,KAFKA0003.hq.corp:2181/'  /opt/kafka/config/server.properties
+
 ###
 ### SSL Configs for /opt/kafka/config/server.properties
 ###
 cat <<-EOF >> /opt/kafka/config/server.properties
  
 ############################# SSL CONFIGS #############################
- 
+
 security.enabled.protocols=TLSv1.2
 security.inter.broker.protocol=SSL
 ssl.key.password=${PASSWORD}
@@ -110,15 +107,14 @@ ssl.truststore.location=/opt/kafka/ssl/server.truststore.jks
 ssl.truststore.password=${PASSWORD}
 ssl.client.auth=none
 EOF
- 
- 
+
 ###
 ### RCC-SWA Configs for /opt/kafka/config/server.properties
 ###
 cat <<-EOF >> /opt/kafka/config/server.properties
- 
+
 ############################# CONFIGS #############################
- 
+
 auto.create.topics.enable=false
 compression.type=snappy
 auto.leader.rebalance.enable=true
@@ -129,15 +125,14 @@ max.partition.fetch.bytes=548576
 fetch.max.bytes=15728640
 replica.fetch.wait.max.ms=5000
 EOF
- 
- 
+
 ###
 ### Make /etc/kafka/ssl 
 ###
+
 mkdir /etc/kafka
 mkdir /etc/kafka/ssl
- 
- 
+
 ###
 ### Create Kafka Brokers Private Key and CSR
 ###
