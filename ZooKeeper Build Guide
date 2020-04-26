@@ -1,4 +1,10 @@
 ###
+### Set BROKER_ID to {1,2,3} depending on which Broker your working on
+###
+
+BROKER_ID=1
+
+###
 ### Download Apache ZooKeeper to /tmp
 ###
 
