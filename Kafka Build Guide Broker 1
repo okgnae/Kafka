@@ -75,13 +75,13 @@ EOF
 sed -i 's/ export KAFKA_HEAP_OPTS=.*/ export KAFKA_HEAP_OPTS="-Xmx1G -Xms1G"/' /opt/kafka/bin/kafka-server-start.sh
 
 ###
-### Server.properties file
+### Server.properties file Configurations
 ###
 
-sed -i 's/^broker.id=.*/broker.id=${BROKER_ID}/'  /opt/kafka/config/server.properties
-sed -i 's/^#delete.topic.enable=.*/delete.topic.enable=true/'  /opt/kafka/config/server.properties
-sed -i 's/^#listeners=.*/listeners=SSL:\/\/KAFKA000${BROKER_ID}.hq.corp:9093/'  /opt/kafka/config/server.properties
-sed -i 's/^#advertised.listeners=.*/advertised.listeners=SSL:\/\/KAFKA000${BROKER_ID}.hq.corp:9093/'  /opt/kafka/config/server.properties
+sed -i "s/^broker.id=.*/broker.id=${BROKER_ID}/"  /opt/kafka/config/server.properties
+sed -i 's/^.*delete.topic.enable=.*/delete.topic.enable=true/'  /opt/kafka/config/server.properties
+sed -i "s/^.*listeners=.*/listeners=SSL:\/\/KAFKA000${BROKER_ID}.hq.corp:9093/"  /opt/kafka/config/server.properties
+sed -i "s/^.*advertised.listeners=.*/advertised.listeners=SSL:\/\/KAFKA000${BROKER_ID}.hq.corp:9093/"  /opt/kafka/config/server.properties
 sed -i 's/^num.network.threads=.*/num.network.threads=6/'  /opt/kafka/config/server.properties
 sed -i 's/^num.io.threads=.*/num.io.threads=10/'  /opt/kafka/config/server.properties
 sed -i 's/^log.dirs=.*/log.dirs=\/opt\/kafka\/data/'  /opt/kafka/config/server.properties
@@ -90,10 +90,11 @@ sed -i 's/^log.retention.hours=.*/log.retention.hours=12/'  /opt/kafka/config/se
 sed -i 's/^zookeeper.connect=.*/zookeeper.connect=KAFKA0001.hq.corp:2181,KAFKA0002.hq.corp:2181,KAFKA0003.hq.corp:2181/'  /opt/kafka/config/server.properties
 
 ###
-### SSL Configs for /opt/kafka/config/server.properties
+### SSL Configs for /opt/kafka/config/server.properties, you will have to fill in PASSWORD
 ###
+
 cat <<-EOF >> /opt/kafka/config/server.properties
- 
+
 ############################# SSL CONFIGS #############################
 
 security.enabled.protocols=TLSv1.2
@@ -109,8 +110,9 @@ ssl.client.auth=none
 EOF
 
 ###
-### RCC-SWA Configs for /opt/kafka/config/server.properties
+### More Configs for /opt/kafka/config/server.properties
 ###
+
 cat <<-EOF >> /opt/kafka/config/server.properties
 
 ############################# CONFIGS #############################
@@ -136,110 +138,113 @@ mkdir /etc/kafka/ssl
 ###
 ### Create Kafka Brokers Private Key and CSR
 ###
-openssl req -nodes -newkey rsa:2048 -keyout /etc/kafka/ssl/XXXXXXXXXXXBK91.aaa.bb.cccc.ddd.key  -out /etc/kafka/ssl/XXXXXXXXXXXBK91.aaa.bb.cccc.ddd.csr -subj "/C=US/O=U.S. Government/OU=DoD/OU=PKI/OU=USA/CN=XXXXXXXXXXXBK91.aaa.bb.cccc.ddd"
- 
- 
+
+openssl req -nodes -newkey rsa:2048 -keyout /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key  -out /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.csr -subj "/C=US/O=hq/OU=corp/CN=KAFKA000${BROKER_ID}.hq.corp"
+
 ###
-### Send the CSR to get signed by GOV CA
+### Send the CSR to get signed by CA
 ###
 
- 
- 
+
+
 ###
 ### Download the Signed Cert
 ###
- 
- 
+
+
+
 ###
 ### Extract the intermediate and Root CA Certs and copy the certificates back to the server
 ###
- 
- 
+
+
+
 ###
 ### Move cert to kafka ssl directory
 ###
+
 mv /tmp/*.cer /etc/kafka/ssl/
- 
- 
+
 ###
 ### Combine Server .key and the Server .cer files to create the server .p12. Use same passwords as set in SSL CONFIGS section of the sever.properties file
 ###
-openssl pkcs12 -export -in /etc/kafka/ssl/XXXXXXXXXXXBK91.aaa.bb.cccc.ddd.cer -inkey /etc/kafka/ssl/XXXXXXXXXXXBK91.aaa.bb.cccc.ddd.key -name XXXXXXXXXXXBK91.aaa.bb.cccc.ddd.p12 > /etc/kafka/ssl/XXXXXXXXXXXBK91.aaa.bb.cccc.ddd.p12
- 
- 
+
+openssl pkcs12 -export -in /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.cer -inkey /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key -name KAFKA000${BROKER_ID}.hq.corp.p12 > /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.p12
+
 ###
 ### Create Server Key Store and add certs. Use same passwords as set in SSL CONFIGS section of the sever.properties file
 ###
-keytool -importkeystore -srckeystore /etc/kafka/ssl/XXXXXXXXXXXBK91.aaa.bb.cccc.ddd.p12 -destkeystore /opt/kafka/ssl/server.keystore.jks -srcstoretype pkcs12 -alias XXXXXXXXXXXBK91.aaa.bb.cccc.ddd.p12
-keytool -keystore /opt/kafka/ssl/server.keystore.jks -alias CARoot3 -import -file "/etc/kafka/ssl/Root CA 3.cer"
-keytool -keystore /opt/kafka/ssl/server.keystore.jks -alias CASW53 -import -file "/etc/kafka/ssl/SW CA-53.cer"
- 
- 
+
+keytool -importkeystore -srckeystore /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.p12 -destkeystore /opt/kafka/ssl/server.keystore.jks -srcstoretype pkcs12 -alias KAFKA000${BROKER_ID}.hq.corp.p12
+keytool -keystore /opt/kafka/ssl/server.keystore.jks -alias CARoot3 -import -file "/etc/kafka/ssl/Root CA.cer"
+keytool -keystore /opt/kafka/ssl/server.keystore.jks -alias CASW53 -import -file "/etc/kafka/ssl/SW CA.cer"
+
+
 ###
 ### Create Server Trust Store and add CA Root Cert. Use same passwords as set in SSL CONFIGS section of the sever.properties file
 ###
+
 keytool -keystore /opt/kafka/ssl/server.truststore.jks -alias CARoot3 -import -file "/etc/kafka/ssl/Root CA 3.cer"
 keytool -keystore /opt/kafka/ssl/server.truststore.jks -alias CASW53 -import -file "/etc/kafka/ssl/SW CA-53.cer"
- 
- 
+
 ###
 ### Create Client Trust Store and add CA certs. Use same passwords as set in SSL CONFIGS section of the sever.properties file
 ###
-keytool -keystore /opt/kafka/ssl/client.truststore.jks -alias CARoot3 -import -file "/etc/kafka/ssl/Root CA 3.cer"
-keytool -keystore /opt/kafka/ssl/client.truststore.jks -alias CASW53 -import -file "/etc/kafka/ssl/SW CA-53.cer"
- 
- 
+
+keytool -keystore /opt/kafka/ssl/client.truststore.jks -alias CARoot3 -import -file "/etc/kafka/ssl/Root CA.cer"
+keytool -keystore /opt/kafka/ssl/client.truststore.jks -alias CASW53 -import -file "/etc/kafka/ssl/SW CA.cer"
+
 ###
 ### List certs in stores to validate
 ###
+
 keytool -list -keystore /opt/kafka/ssl/server.keystore.jks
 keytool -list -keystore /opt/kafka/ssl/server.truststore.jks
 keytool -list -keystore /opt/kafka/ssl/client.truststore.jks
- 
- 
+
 ###
 ### Backup Key Stores to /etc/kafka/ssl
 ###
+
 cp  /opt/kafka/ssl/*.jks  /etc/kafka/ssl
- 
- 
+
 ###
 ### Correct Kafka directory permissions
 ###
+
 chown -R kafka:kafka /opt/kafka
 chmod -R 700 /opt/kafka
 chown -R root:root  /etc/kafka
 chmod -R 700 /etc/kafka
- 
- 
+
 ###
 ### Configuring Firewall
 ###
-firewall-cmd --permanent --add-rich-rule 'rule family="ipv4" source address="10.0.0.0/24" port port="9093" protocol="tcp" accept'
+
 firewall-cmd --permanent --add-rich-rule 'rule family="ipv4" source address="10.0.0.0/24" port port="9093" protocol="tcp" accept'
 firewall-cmd --reload
 firewall-cmd --list-all
- 
- 
+
 ###
 ### Reload Systemd Service units
 ###
+
 systemctl daemon-reload
- 
- 
+
 ###
 ### Set Kafka Service to start on boot
 ###
+
 systemctl enable kafka
- 
- 
+
 ###
 ### Start Kafka Service
 ###
+
 systemctl start kafka
- 
- 
+
 ###
 ### Status Kafka Service
 ###
+
 systemctl  status  kafka
