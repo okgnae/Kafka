@@ -22,4 +22,4 @@ FQDN: KAFKA0003.hq.corp
 Broker ID: 3
 
 
-There are broker personality configurations. Throughout the guide I will high light broker personality configurations in green
+There are broker personality configurations. Throughout the guide I will try to consistently annotate it with ${} symbols
