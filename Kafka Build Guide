@@ -1,6 +1,8 @@
 ###
 ### Set BROKER_ID to {1,2,3} depending on which Broker your working on
+### Passwords are set for refrance in lab, dont write passwords in scripts in production 
 BROKER_ID=1
+KAFKA_PASS=kafka_pass
 
 ###
 ### Download Kafka tarball from apache
@@ -13,7 +15,7 @@ mv /tmp/kafka_2.12-2.5.0.tgz /opt
 ###
 ### Untar file
 tar -zxf /opt/kafka_2.12-2.5.0.tgz -C /opt
- 
+
 ###
 ### Rename Kafka directory name
 mv  /opt/kafka_2.12-2.5.0  /opt/kafka
@@ -32,7 +34,7 @@ useradd -u 996 -U kafka -m -d /opt/kafka -s /sbin/nologin
 
 ###
 ### Create Kafka service unit
-cat <<-EOF > /etc/systemd/system/kafka.service
+cat << EOF > /etc/systemd/system/kafka.service
 [Unit]
 Description=Kafka
 Documentation=http://kafka.apache.org
@@ -73,19 +75,19 @@ sed -i 's/^zookeeper.connect=.*/zookeeper.connect=KAFKA0001.hq.corp:2181,KAFKA00
 
 ###
 ### SSL Configs for /opt/kafka/config/server.properties, you will have to fill in PASSWORD
-cat <<-EOF >> /opt/kafka/config/server.properties
+cat << EOF >> /opt/kafka/config/server.properties
 
 ############################# SSL CONFIGS #############################
 
 security.enabled.protocols=TLSv1.2
 security.inter.broker.protocol=SSL
-ssl.key.password=${PASSWORD}
+ssl.key.password=${KAFKA_PASS}
 ssl.keystore.type=JKS
 ssl.keystore.location=/opt/kafka/ssl/server.keystore.jks
-ssl.keystore.password=${PASSWORD}
+ssl.keystore.password=${KAFKA_PASS}
 ssl.truststore.type=JKS
 ssl.truststore.location=/opt/kafka/ssl/server.truststore.jks
-ssl.truststore.password=${PASSWORD}
+ssl.truststore.password=${KAFKA_PASS}
 ssl.client.auth=none
 EOF
 
