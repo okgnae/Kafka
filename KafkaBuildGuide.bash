@@ -1,5 +1,5 @@
 ### Set BROKER_ID to {1,2,3} depending on which Broker your working on
-### Passwords are set for refrance in lab, dont write passwords in scripts in production 
+### Passwords are set in lab, dont write passwords in scripts in production 
 BROKER_ID=1
 KAFKA_PASS=kafka123
 
