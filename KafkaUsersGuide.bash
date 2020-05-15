@@ -41,7 +41,7 @@ ll /opt/kafka/lib/*.jar
 ###################
 
 ### Create ssl.consumer.properties file
-cat <<-EOF > /etc/kafka/ssl/ssl.consumer.properties
+cat << EOF > /etc/kafka/ssl/ssl.consumer.properties
 # Consumer IDs
 client.id=test-consumer
 group.id=test-consumer-group
@@ -49,7 +49,7 @@ group.id=test-consumer-group
 # SSL Config
 security.protocol=SSL
 ssl.truststore.location=/opt/kafka/ssl/server.truststore.jks
-ssl.truststore.password=${PASSWORD}
+ssl.truststore.password=${KAFKA_PASS}
 EOF
 
 ### Create Console Consumer
@@ -70,14 +70,14 @@ EOF
 ##################
 
 ### Create ssl.producer.properties file
-cat <<-EOF > /etc/kafka/ssl/ssl.producer.properties
+cat << EOF > /etc/kafka/ssl/ssl.producer.properties
 # Producer IDs
 client.id=test-producer
  
 # SSL Config
 security.protocol=SSL
 ssl.truststore.location=/opt/kafka/ssl/server.truststore.jks
-ssl.truststore.password=${PASSWORD}
+ssl.truststore.password=${KAFKA_PASS}
 EOF
 
 ### Create Console Producer
