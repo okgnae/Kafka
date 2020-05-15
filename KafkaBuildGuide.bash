@@ -7,22 +7,22 @@ KAFKA_PASS=kafka123
 curl --url https://downloads.apache.org/kafka/2.5.0/kafka_2.12-2.5.0.tgz --output /tmp/kafka_2.12-2.5.0.tgz
 
 ### Move kafka tgz file from tmp to opt
-mv /tmp/kafka_2.12-2.5.0.tgz /opt
+mv -f /tmp/kafka_2.12-2.5.0.tgz /opt/
 
 ### Untar file
-tar -zxf /opt/kafka_2.12-2.5.0.tgz -C /opt
+tar -zxf /opt/kafka_2.12-2.5.0.tgz -C /opt/
 
 ### Rename Kafka directory name
-mv  /opt/kafka_2.12-2.5.0  /opt/kafka
+mv -f /opt/kafka_2.12-2.5.0  /opt/kafka/
 
 ### Create Data directory
-mkdir /opt/kafka/data
+mkdir /opt/kafka/data/
 
 ### Make SSL Directory
-mkdir /opt/kafka/ssl
+mkdir /opt/kafka/ssl/
 
 ### Add user. Will cause warning
-useradd -u 996 -U kafka -m -d /opt/kafka -s /sbin/nologin
+useradd -u 996 -M -U kafka -s /sbin/nologin
 
 ### Create Kafka service unit
 cat << EOF > /etc/systemd/system/kafka.service
@@ -95,8 +95,8 @@ replica.fetch.wait.max.ms=5000
 EOF
 
 ### Make /etc/kafka/ssl 
-mkdir /etc/kafka
-mkdir /etc/kafka/ssl
+mkdir /etc/kafka/
+mkdir /etc/kafka/ssl/
 
 #######################################################################################
 ###### Use this following setion if you dont alreay have a Certificate Authority ######
@@ -141,7 +141,7 @@ echo 00 > /etc/kafka/ca/kafka-interm-ca-1.srl
 ################################################################
 
 ### Create Kafka Brokers Private Key and CSR
-openssl req -nodes -newkey rsa:2048 -keyout /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key  -out /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.csr -subj "/C=US/O=corp/OU=hq/CN=KAFKA000${BROKER_ID}.hq.corp"
+openssl req -nodes -newkey rsa:2048 -keyout /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key  -out /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.csr -subj "/O=corp/OU=hq/CN=KAFKA000${BROKER_ID}.hq.corp"
 
 ##################################################################
 ### If you have a third party CA have it sign the Broker Certs ###
@@ -151,32 +151,83 @@ openssl req -nodes -newkey rsa:2048 -keyout /etc/kafka/ssl/KAFKA000${BROKER_ID}.
 ### sign the Broker CSR with kafka-interm-ca-1
 openssl x509 -req -days 3650 -CA /etc/kafka/ca/kafka-interm-ca-1.crt -CAkey /etc/kafka/ca/kafka-interm-ca-1.key -CAserial /etc/kafka/ca/kafka-interm-ca-1.srl -in /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.csr -out /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.crt
 
-### Check keys, CSRs and certs
-openssl req -text -noout -verify -in /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.csr
-openssl rsa -check -in /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key
-openssl x509 -noout -text -in /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.cer
+############################################################################
+##################### If your set up a CA on Broker1 #######################
+############# creat CSRs on Broker 2,3 and copy to Broker 1 ################
+### Sign the CSRs and copy signed certs back to the corresponding broker ###
+############################################################################
 
-### Combine Server .key and the Server .cer files to create the server .p12. Use same passwords as set in SSL CONFIGS section of the sever.properties file
+### Copy CSRs from Broker 2,3 to Broker 1
+### This will requier allowing ssh from broker 2,3 to broker 1
+# scp /etc/kafka/ssl/KAFKA0002.hq.corp.csr daniel@KAFKA0001:/tmp
+# scp /etc/kafka/ssl/KAFKA0003.hq.corp.csr daniel@KAFKA0001:/tmp
+
+### Move the CSRs to /etc/kafka/ca/ on Broker 1
+# mv -f /tmp/*.csr /etc/kafka/ca/
+
+### Sign CSRs from broker 2,3 with interm CA on broker 1
+# openssl x509 -req -days 3650 -CA /etc/kafka/ca/kafka-interm-ca-1.crt -CAkey /etc/kafka/ca/kafka-interm-ca-1.key -CAserial /etc/kafka/ca/kafka-interm-ca-1.srl -in /etc/kafka/ca/KAFKA0002.hq.corp.csr -out /etc/kafka/ca/KAFKA0002.hq.corp.crt
+# openssl x509 -req -days 3650 -CA /etc/kafka/ca/kafka-interm-ca-1.crt -CAkey /etc/kafka/ca/kafka-interm-ca-1.key -CAserial /etc/kafka/ca/kafka-interm-ca-1.srl -in /etc/kafka/ca/KAFKA0003.hq.corp.csr -out /etc/kafka/ca/KAFKA0003.hq.corp.crt
+
+### Copy Signed certs back to brokers 2,3 from bropker 1
+# scp /etc/kafka/ca/KAFKA0002.hq.corp.crt daniel@KAFKA0002:/tmp
+# scp /etc/kafka/ca/KAFKA0003.hq.corp.crt daniel@KAFKA0003:/tmp
+
+### Copy kafka-root-ca-1.crt and kafka-interm-ca-1.crt from broker 1 to brokers 2,3
+# scp /etc/kafka/ca/kafka-root-ca-1.crt daniel@KAFKA0002:/tmp
+# scp /etc/kafka/ca/kafka-interm-ca-1.crt  daniel@KAFKA0002:/tmp
+
+# scp /etc/kafka/ca/kafka-root-ca-1.crt daniel@KAFKA0003:/tmp
+# scp /etc/kafka/ca/kafka-interm-ca-1.crt  daniel@KAFKA0003:/tmp
+
+### Move Signed certs from /tmp to /etc/kafka/ssl
+# mv -f /tmp/KAFKA0002.hq.corp.crt /etc/kafka/ssl/
+# mv -f /tmp/kafka-root-ca-1.crt /etc/kafka/ssl/
+# mv -f /tmp/kafka-interm-ca-1.crt /etc/kafka/ssl/
+
+# mv -f /tmp/KAFKA0003.hq.corp.crt /etc/kafka/ssl/
+# mv -f /tmp/kafka-root-ca-1.crt /etc/kafka/ssl/
+# mv -f /tmp/kafka-interm-ca-1.crt /etc/kafka/ssl/
+
+### On Broker one copy kafka-root-ca-1.crt and kafka-interm-ca-1.crt to /etc/kafka/ssl
+# cp /etc/kafka/ca/kafka-root-ca-1.crt /etc/kafka/ssl/
+# cp /etc/kafka/ca/kafka-interm-ca-1.crt /etc/kafka/ssl/
+
+##################################################
+######### This completes the CA portion ##########
+###### To make sure got all the files needs ######
+### Check all brokers for .crt, .csr and .key ####
+##################################################
+ll /etc/kafka/ssl/
+
+### Combine Server .key and the Server .crt files to create the server .p12. Use same passwords as set in SSL CONFIGS section of the sever.properties file
 openssl pkcs12 -export -in /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.crt -inkey /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key -name KAFKA000${BROKER_ID}.hq.corp.p12 -out /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.p12
+
+### Check keys, CSRs, crts and p12 on each broker
+openssl x509 -noout -text -in /etc/kafka/ssl/kafka-root-ca-1.crt
+openssl x509 -noout -text -in /etc/kafka/ssl/kafka-interm-ca-1.crt
+openssl rsa -check -in /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key
+openssl req -text -noout -verify -in /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.csr
+openssl x509 -noout -text -in /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.crt
 openssl pkcs12 -info -in /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.p12
 
 ### Create Server Key Store and add certs. Use same passwords as set in SSL CONFIGS section of the sever.properties file
 keytool -importkeystore -srckeystore /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.p12 -destkeystore /opt/kafka/ssl/server.keystore.jks -srcstoretype pkcs12 -alias KAFKA000${BROKER_ID}.hq.corp.p12
-keytool -keystore /opt/kafka/ssl/server.keystore.jks -alias kafka-root-ca-1 -import -file "/etc/kafka/ca/kafka-root-ca-1.crt"
-keytool -keystore /opt/kafka/ssl/server.keystore.jks -alias kafka-interm-ca-1 -import -file "/etc/kafka/ca/kafka-interm-ca-1.crt"
+keytool -keystore /opt/kafka/ssl/server.keystore.jks -alias kafka-root-ca-1 -import -file "/etc/kafka/ssl/kafka-root-ca-1.crt"
+keytool -keystore /opt/kafka/ssl/server.keystore.jks -alias kafka-interm-ca-1 -import -file "/etc/kafka/ssl/kafka-interm-ca-1.crt"
 
 ### Create Server Trust Store and add CA Root Cert. Use same passwords as set in SSL CONFIGS section of the sever.properties file
-keytool -keystore /opt/kafka/ssl/server.truststore.jks -alias kafka-root-ca 1 -import -file "/etc/kafka/ca/kafka-root-ca-1.crt"
-keytool -keystore /opt/kafka/ssl/server.truststore.jks -alias kafka-interm-ca-1 -import -file "/etc/kafka/ca/kafka-interm-ca-1.crt"
+keytool -keystore /opt/kafka/ssl/server.truststore.jks -alias kafka-root-ca-1 -import -file "/etc/kafka/ssl/kafka-root-ca-1.crt"
+keytool -keystore /opt/kafka/ssl/server.truststore.jks -alias kafka-interm-ca-1 -import -file "/etc/kafka/ssl/kafka-interm-ca-1.crt"
 
 ### Create Client Trust Store and add CA certs. Use same passwords as set in SSL CONFIGS section of the sever.properties file
-keytool -keystore /opt/kafka/ssl/client.truststore.jks -alias kafka-root-ca-1 -import -file "/etc/kafka/ca/kafka-root-ca-1.crt"
-keytool -keystore /opt/kafka/ssl/client.truststore.jks -alias kafka-interm-ca-1 -import -file "/etc/kafka/ca/kafka-interm-ca-1.crt"
+keytool -keystore /opt/kafka/ssl/client.truststore.jks -alias kafka-root-ca-1 -import -file "/etc/kafka/ssl/kafka-root-ca-1.crt"
+keytool -keystore /opt/kafka/ssl/client.truststore.jks -alias kafka-interm-ca-1 -import -file "/etc/kafka/ssl/kafka-interm-ca-1.crt"
 
 ### List certs in stores to validate
-keytool -list -keystore /opt/kafka/ssl/server.keystore.jks
-keytool -list -keystore /opt/kafka/ssl/server.truststore.jks
-keytool -list -keystore /opt/kafka/ssl/client.truststore.jks
+keytool -list -keystore /opt/kafka/ssl/server.keystore.jks -storepass kafka123
+keytool -list -keystore /opt/kafka/ssl/server.truststore.jks -storepass kafka123
+keytool -list -keystore /opt/kafka/ssl/client.truststore.jks -storepass kafka123
 
 ### Backup Key Stores to /etc/kafka/ssl
 cp  /opt/kafka/ssl/*.jks  /etc/kafka/ssl
