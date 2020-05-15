@@ -2,8 +2,9 @@
 BROKER_ID=1
 
 ### Download Apache ZooKeeper to /tmp, Check the version, make sure the link is still valid, will update
+### Will be working automated download of the current version later in a update guide
 curl --url https://downloads.apache.org/zookeeper/zookeeper-3.5.8/apache-zookeeper-3.5.8-bin.tar.gz --output /tmp/apache-zookeeper-3.5.8-bin.tar.gz
- 
+
 ### Install Java on the Server
 yum install java -y
 
@@ -11,20 +12,17 @@ yum install java -y
 mv -f /tmp/apache-zookeeper-3.5.8-bin.tar.gz /opt/
 
 ### Untar file
-tar -zxf /opt/apache-zookeeper-3.5.8-bin.tar.gz -C /opt
- 
-### Rename Zookeeper directory using mv
-mv /opt/apache-zookeeper-3.5.8-bin /opt/zookeeper
- 
-### Make zookeeper user (UID below 1000 non-interactive)
-useradd -u 994 -U zookeeper  -m -d /opt/zookeeper -s /sbin/nologin
+tar -zxf /opt/apache-zookeeper-3.5.8-bin.tar.gz -C /opt/
 
-### Create myid file - Edit myid value to match the BROKER_ID
-echo ${BROKER_ID} > /var/lib/zookeeper/myid
- 
+### Rename Zookeeper directory using mv
+mv -f /opt/apache-zookeeper-3.5.8-bin /opt/zookeeper/
+
+### Make zookeeper user (UID below 1000 non-interactive)
+useradd -u 994 -M -U zookeeper -s /sbin/nologin
+
 ### Backup sample conf file
 mv /opt/zookeeper/conf/zoo_sample.cfg /opt/zookeeper/conf/zoo_sample.cfg.bak
- 
+
 ### Copy file
 cp /opt/zookeeper/conf/zoo_sample.cfg.bak /opt/zookeeper/conf/zoo.cfg
  
@@ -34,11 +32,14 @@ echo "server.2=KAFKA0002.hq.corp:2888:3888" >> /opt/zookeeper/conf/zoo.cfg
 echo "server.3=KAFKA0003.hq.corp:2888:3888" >> /opt/zookeeper/conf/zoo.cfg
 
 ### Create /opt/zookeeper/dataDir
-mkdir /opt/zookeeper/dataDir
+mkdir /opt/zookeeper/dataDir/
 
 ### Modify data storage directory
 sed -i 's/^dataDir=.*/dataDir=\/opt\/zookeeper\/dataDir/'  /opt/zookeeper/conf/zoo.cfg
- 
+
+### Create myid file - Edit myid value to match the BROKER_ID
+echo ${BROKER_ID} > /opt/zookeeper/dataDir/myid
+
 ### Make opt zookeeper log directory
 mkdir /opt/zookeeper/logs
  
