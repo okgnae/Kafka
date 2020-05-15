@@ -2,7 +2,7 @@ systemctl stop zookeeper
 systemctl disable zookeeper
 rm -fr /etc/systemd/system/zookeeper.service
  
-userdel -r zookeeper
+userdel zookeeper
  
 rm -rf /opt/zookeeper
 
