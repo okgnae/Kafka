@@ -49,7 +49,7 @@ group.id=test-consumer-group
 # SSL Config
 security.protocol=SSL
 ssl.truststore.location=/opt/kafka/ssl/server.truststore.jks
-ssl.truststore.password=${KAFKA_PASS}
+ssl.truststore.password=kafka123
 EOF
 
 ### Create Console Consumer
@@ -77,11 +77,13 @@ client.id=test-producer
 # SSL Config
 security.protocol=SSL
 ssl.truststore.location=/opt/kafka/ssl/server.truststore.jks
-ssl.truststore.password=${KAFKA_PASS}
+ssl.truststore.password=kafka123
 EOF
 
 ### Create Console Producer
 /opt/kafka/bin/kafka-console-producer.sh --broker-list KAFKA000${BROKER_ID}.hq.corp:9093 --producer.config  /etc/kafka/ssl/ssl.producer.properties  --topic TEST_TOPIC
+
+
 
 ##################
 #### TEST SSL ####
