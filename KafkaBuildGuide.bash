@@ -135,7 +135,7 @@ echo 00 > /etc/kafka/ca/kafka-interm-ca-1.srl
 ################################################################
 
 ### Create Kafka Brokers Private Key and CSR
-openssl req -newkey rsa:2048 -keyout /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key  -out /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.csr -subj "/O=corp/OU=hq/CN=KAFKA000${BROKER_ID}.hq.corp"
+openssl req -new -newkey rsa:2048 -keyout /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key  -out /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.csr -subj "/O=corp/OU=hq/CN=KAFKA000${BROKER_ID}.hq.corp"
 
 ##################################################################
 ### If you have a third party CA have it sign the Broker Certs ###
@@ -164,22 +164,17 @@ openssl x509 -req -days 3650 -CA /etc/kafka/ca/kafka-interm-ca-1.crt -CAkey /etc
 # openssl x509 -req -days 3650 -CA /etc/kafka/ca/kafka-interm-ca-1.crt -CAkey /etc/kafka/ca/kafka-interm-ca-1.key -CAserial /etc/kafka/ca/kafka-interm-ca-1.srl -in /etc/kafka/ca/KAFKA0003.hq.corp.csr -out /etc/kafka/ca/KAFKA0003.hq.corp.crt
 
 ### Copy Signed certs back to brokers 2,3 from bropker 1
-# scp /etc/kafka/ca/KAFKA0002.hq.corp.crt daniel@KAFKA0002:/tmp
-# scp /etc/kafka/ca/KAFKA0003.hq.corp.crt daniel@KAFKA0003:/tmp
-
 ### Copy kafka-root-ca-1.crt and kafka-interm-ca-1.crt from broker 1 to brokers 2,3
+# scp /etc/kafka/ca/KAFKA0002.hq.corp.crt daniel@KAFKA0002:/tmp
 # scp /etc/kafka/ca/kafka-root-ca-1.crt daniel@KAFKA0002:/tmp
 # scp /etc/kafka/ca/kafka-interm-ca-1.crt  daniel@KAFKA0002:/tmp
 
+# scp /etc/kafka/ca/KAFKA0003.hq.corp.crt daniel@KAFKA0003:/tmp
 # scp /etc/kafka/ca/kafka-root-ca-1.crt daniel@KAFKA0003:/tmp
 # scp /etc/kafka/ca/kafka-interm-ca-1.crt  daniel@KAFKA0003:/tmp
 
 ### Move Signed certs from /tmp to /etc/kafka/ssl
-# mv -f /tmp/KAFKA0002.hq.corp.crt /etc/kafka/ssl/
-# mv -f /tmp/kafka-root-ca-1.crt /etc/kafka/ssl/
-# mv -f /tmp/kafka-interm-ca-1.crt /etc/kafka/ssl/
-
-# mv -f /tmp/KAFKA0003.hq.corp.crt /etc/kafka/ssl/
+# mv -f /tmp/KAFKA000*.hq.corp.crt /etc/kafka/ssl/
 # mv -f /tmp/kafka-root-ca-1.crt /etc/kafka/ssl/
 # mv -f /tmp/kafka-interm-ca-1.crt /etc/kafka/ssl/
 
