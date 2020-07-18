@@ -116,7 +116,7 @@ openssl x509 -noout -text -in /etc/kafka/ca/kafka-root-ca-1.crt
 echo 00 > /etc/kafka/ca/kafka-root-ca-1.srl
 
 ### Create intermediate CA Key and CSR, ca123
-openssl req -new -keyout /etc/kafka/ca/kafka-interm-ca-1.key -out /etc/kafka/ca/kafka-interm-ca-1.csr -subj "/O=corp/OU=hq/CN=kafka-interm-ca-1"
+openssl req -new -newkey rsa:2048 -keyout /etc/kafka/ca/kafka-interm-ca-1.key -out /etc/kafka/ca/kafka-interm-ca-1.csr -subj "/O=corp/OU=hq/CN=kafka-interm-ca-1"
 openssl req -noout -text -verify -in /etc/kafka/ca/kafka-interm-ca-1.csr
 
 ### Sign Intermediate CA CSR with root CA Key
@@ -135,7 +135,7 @@ echo 00 > /etc/kafka/ca/kafka-interm-ca-1.srl
 ################################################################
 
 ### Create Kafka Brokers Private Key and CSR
-openssl req -nodes -newkey rsa:2048 -keyout /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key  -out /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.csr -subj "/O=corp/OU=hq/CN=KAFKA000${BROKER_ID}.hq.corp"
+openssl req -newkey rsa:2048 -keyout /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.key  -out /etc/kafka/ssl/KAFKA000${BROKER_ID}.hq.corp.csr -subj "/O=corp/OU=hq/CN=KAFKA000${BROKER_ID}.hq.corp"
 
 ##################################################################
 ### If you have a third party CA have it sign the Broker Certs ###
