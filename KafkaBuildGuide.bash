@@ -108,32 +108,26 @@ mkdir /etc/kafka/ssl/
 ### Make a CA directory
 mkdir /etc/kafka/ca
 
-### Create Root CA Key
-openssl ecparam -genkey -name secp384r1 | openssl ec -aes256 -out /etc/kafka/ca/kafka-root-ca-1.key
-
-### Create and view Root CA Certificate
-openssl req -x509 -days 3650 -extensions v3_ca -key /etc/kafka/ca/kafka-root-ca-1.key -out /etc/kafka/ca/kafka-root-ca-1.crt -subj "/O=corp/OU=hq/CN=kafka-root-ca-1"
+### Create Root CA Key and Cert, ca123
+openssl req -x509 -extensions v3_ca -newkey rsa:2048 -keyout /etc/kafka/ca/kafka-root-ca-1.key -out /etc/kafka/ca/kafka-root-ca-1.crt -subj "/O=corp/OU=hq/CN=kafka-root-ca-1" -days 3650
 openssl x509 -noout -text -in /etc/kafka/ca/kafka-root-ca-1.crt
 
 ### Create Root CA Serial file
 echo 00 > /etc/kafka/ca/kafka-root-ca-1.srl
 
-### Create intermediate CA Key
-openssl ecparam -genkey -name secp384r1 | openssl ec -aes256 -out /etc/kafka/ca/kafka-interm-ca-1.key
-
-### Create Intermediate CA CSR from Intermediate CA Key
-openssl req -new -key /etc/kafka/ca/kafka-interm-ca-1.key -out /etc/kafka/ca/kafka-interm-ca-1.csr -subj "/O=corp/OU=hq/CN=kafka-interm-ca-1"
-openssl req -text -noout -verify -in /etc/kafka/ca/kafka-interm-ca-1.csr
+### Create intermediate CA Key and CSR, ca123
+openssl req -new -keyout /etc/kafka/ca/kafka-interm-ca-1.key -out /etc/kafka/ca/kafka-interm-ca-1.csr -subj "/O=corp/OU=hq/CN=kafka-interm-ca-1"
+openssl req -noout -text -verify -in /etc/kafka/ca/kafka-interm-ca-1.csr
 
 ### Sign Intermediate CA CSR with root CA Key
-openssl x509 -req -days 3650 -CA /etc/kafka/ca/kafka-root-ca-1.crt -CAkey /etc/kafka/ca/kafka-root-ca-1.key -CAserial /etc/kafka/ca/kafka-root-ca-1.srl -extensions v3_intermediate_ca -in /etc/kafka/ca/kafka-interm-ca-1.csr -out /etc/kafka/ca/kafka-interm-ca-1.crt
-openssl x509 -noout -text -in /etc/kafka/ca/kafka-interm-ca-1.cer
+openssl x509 -req -CA /etc/kafka/ca/kafka-root-ca-1.crt -CAkey /etc/kafka/ca/kafka-root-ca-1.key -CAserial /etc/kafka/ca/kafka-root-ca-1.srl -extensions v3_intermediate_ca -in /etc/kafka/ca/kafka-interm-ca-1.csr -out /etc/kafka/ca/kafka-interm-ca-1.crt -days 3650
+openssl x509 -noout -text -in /etc/kafka/ca/kafka-interm-ca-1.crt
 
 ### Create Root CA Serial file
 echo 00 > /etc/kafka/ca/kafka-interm-ca-1.srl
 
 ### Sign CSRs with the intermediate CA, you will have to make you CSRs on each broker
-### openssl x509 -req -days 3650 -CA /etc/kafka/ca/kafka-interm-ca-1.cer -CAkey /etc/kafka/ca/kafka-interm-ca-1.key -CAserial /etc/kafka/ca/kafka-interm-ca-1.srl -in /etc/kafka/ca/${BROKER_CSR} -out /etc/kafka/ca/${BROKER_CER}
+### openssl x509 -req -CA /etc/kafka/ca/kafka-interm-ca-1.crt -CAkey /etc/kafka/ca/kafka-interm-ca-1.key -CAserial /etc/kafka/ca/kafka-interm-ca-1.srl -in /etc/kafka/ca/${BROKER_CSR} -out /etc/kafka/ca/${BROKER_CRT} -days 3650 
 
 ################################################################
 ### If you created a CA on Broker1 one you will need to copy ###
