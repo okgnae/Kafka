@@ -94,6 +94,27 @@ firewall-cmd --permanent --add-rich-rule 'rule family="ipv4" source address="192
 firewall-cmd --reload
 firewall-cmd --list-all
 
+### Set up local yum repo
+echo << EOF > /etc/yum.repos.d/CentOS-Local.repo
+[CentOS-Local-Base]
+name=CentOS-Local-Base
+baseurl=http://10.0.0.10/yum/centos/base/Packages
+gpgcheck=0
+enabled=1
+
+[CentOS-Local-Extras]
+name=CentOS-Local-Extras
+baseurl=http://10.0.0.10/yum/centos/extras/Packages
+gpgcheck=0
+enabled=1
+
+[CentOS-Local-Updates]
+name=CentOS-Local-Updates
+baseurl=http://10.0.0.10/yum/centos/updates/Packages
+gpgcheck=0
+enabled=1
+EOF
+
 ### Apply updates via YUM and reboot the server
 yum update -y
 reboot
