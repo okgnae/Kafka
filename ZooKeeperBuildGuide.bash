@@ -2,7 +2,6 @@
 BROKER_ID=1
 
 ### Download Apache ZooKeeper to /tmp, Check the version, make sure the link is still valid, will update
-### Will be working automated download of the current version later in a update guide
 curl --url https://downloads.apache.org/zookeeper/zookeeper-3.5.8/apache-zookeeper-3.5.8-bin.tar.gz --output /tmp/apache-zookeeper-3.5.8-bin.tar.gz
 
 ### Install Java on the Server
