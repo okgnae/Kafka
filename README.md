@@ -1,5 +1,5 @@
 # Kafka 3 Broker Test Cluster
-Demonstrate how to create a 3 broker zookeeper / kafka cluster.  
+Demonstrate how to create a 3 broker zookeeper / kafka cluster with TLS communication.  
 
 Broker Names and Node IDs
 ###
