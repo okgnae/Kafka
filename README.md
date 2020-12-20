@@ -1,6 +1,5 @@
 # Kafka 3 Broker Test Cluster
-Demonstrate how to create a 3 broker zookeeper / kafka cluster.
-Kafka Data flow diagram coming soon…
+Demonstrate how to create a 3 broker zookeeper / kafka cluster.  
 
 Broker Names and Node IDs
 ###
