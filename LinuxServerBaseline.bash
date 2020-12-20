@@ -1,6 +1,6 @@
 ### Linux Server Baseline
-### You will need to set up these baseline configuration for each server
-### Set up some accounts Accounts, no thats not a good password, this will be set up in andaconda
+### You will need to set up baseline configurations for each server
+### Set up some accounts Accounts
 User: root
 Pass: 123
 
@@ -18,7 +18,7 @@ ext4    /tmp              10 GiB
 ext4    /home             10 GiB
 ext4    /opt              Remaining
  
-### Network ifcfg-enp0s3, this is just the way I set up my Oracle VBox Network, BROKER_ID should be {1,2,3} respective tot he broker you are working on
+### Network ifcfg-enp0s3, this is just the way I set up my Oracle VBox Network, BROKER_ID should be {1,2,3} respective to the broker you are working on
 vi /etc/sysconfig/network-scripts/ifcfg-enp0s3
   TYPE=Ethernet
   PROXY_METHOD=none
