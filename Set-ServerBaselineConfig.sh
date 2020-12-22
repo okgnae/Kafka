@@ -1,22 +1,24 @@
 ### Linux Server Baseline
 ### You will need to set up baseline configurations for each server
-### Set up some accounts Accounts
-User: root
-Pass: 123
+### Configurations here is very for your environment
 
-User: user
-Pass: 123
+### Set up some accounts Accounts
+# User: root
+# Pass: 123
+
+# User: user
+# Pass: 123
  
 ### Filesystem Configuration, this will be set up in andaconda
-xfs     /boot             1 GiB
-ext4    /                 10 GiB
-SWAP    [swap]            2 GiB
-ext4    /var              10 GiB
-ext4    /var/log/         10 GiB
-ext4    /var/log/audit    10 GiB
-ext4    /tmp              10 GiB
-ext4    /home             10 GiB
-ext4    /opt              Remaining
+# xfs     /boot             1 GiB
+# ext4    /                 10 GiB
+# SWAP    [swap]            2 GiB
+# ext4    /var              10 GiB
+# ext4    /var/log/         10 GiB
+# ext4    /var/log/audit    10 GiB
+# ext4    /tmp              10 GiB
+# ext4    /home             10 GiB
+# ext4    /opt              Remaining
  
 ### Network ifcfg-enp0s3, this is just the way I set up my Oracle VBox Network, BROKER_ID should be {1,2,3} respective to the broker you are working on
 vi /etc/sysconfig/network-scripts/ifcfg-enp0s3
