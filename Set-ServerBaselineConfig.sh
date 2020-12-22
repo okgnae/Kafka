@@ -9,7 +9,7 @@
 # User: user
 # Pass: 123
  
-### Filesystem Configuration, this will be set up in andaconda
+### Filesystem
 # xfs     /boot             1 GiB
 # ext4    /                 10 GiB
 # SWAP    [swap]            2 GiB
@@ -19,7 +19,7 @@
 # ext4    /tmp              10 GiB
 # ext4    /home             10 GiB
 # ext4    /opt              Remaining
- 
+
 ### Network ifcfg-enp0s3, this is just the way I set up my Oracle VBox Network, BROKER_ID should be {1,2,3} respective to the broker you are working on
 vi /etc/sysconfig/network-scripts/ifcfg-enp0s3
   TYPE=Ethernet
